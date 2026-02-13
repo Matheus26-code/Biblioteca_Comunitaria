@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Instrumento</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: white; padding: 40px; }
+        .form-container { background: #2d2d2d; padding: 30px; border-radius: 12px; max-width: 600px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; color: #007bff; }
+        label { display: block; margin-top: 10px; color: #aaa; }
+        input { width: 100%; padding: 12px; margin-top: 5px; background: #3d3d3d; border: 1px solid #555; border-radius: 6px; color: white; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; padding: 15px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 25px; }
+        .back-link { display: block; text-align: center; margin-top: 15px; text-decoration: none; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Editar: {{ inst.tipo }}</h2>
+        <form action="/editar/{{ inst.id }}" method="POST">
+            <label>Tipo:</label>
+            <input type="text" name="tipo" value="{{ inst.tipo }}" required>
+            
+            <label>Marca:</label>
+            <input type="text" name="marca" value="{{ inst.marca }}">
+            
+            <label>Modelo:</label>
+            <input type="text" name="modelo" value="{{ inst.modelo }}">
+            
+            <label>Número de Série:</label>
+            <input type="text" name="numero" value="{{ inst.numero }}">
+            
+            <label>Origem:</label>
+            <input type="text" name="origem" value="{{ inst.origem }}">
+            
+            <label>Aluno Responsável:</label>
+            <input type="text" name="aluno" value="{{ inst.aluno_responsavel }}">
+
+            <div class="form-group">
+                <label>Data de Empréstimo:</label>
+                <input type="text" name="data_emprestimo" value="{{ inst.data_emprestimo }}" class="form-control">
+            </div>
+            
+            <label>Telefone do Aluno:</label>
+            <input type="text" name="contato" onkeyup="handlePhone(event)" maxlength="15" value="{{ inst.contato_aluno }}">
+            
+            <button type="submit">Salvar Alterações</button>
+        </form>
+        <a href="/" class="back-link">Cancelar e Voltar</a>
+    </div>
+
+    <script>
+        const handlePhone = (event) => {
+            let input = event.target;
+            input.value = phoneMask(input.value);
+        }
+        const phoneMask = (value) => {
+            if (!value) return "";
+            value = value.replace(/\D/g, '');
+            value = value.replace(/(\d{2})(\d)/, "($1) $2");
+            value = value.replace(/(\d{5})(\d)/, "$1-$2");
+            return value;
+        }
+    </script>
+</body>
+</html>

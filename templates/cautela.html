@@ -1,0 +1,17 @@
+<body onload="window.print()" style="font-family: sans-serif; padding: 50px; color: black; background: white;">
+    <center>
+        <h2>TERMO DE RESPONSABILIDADE E CAUTELA</h2>
+        <p>Biblioteca Comunitária - Inventário de Instrumentos</p>
+    </center>
+    <hr>
+    <p>Eu, <b>{{ inst.aluno_responsavel }}</b>, portador do contato <b>{{ inst.contato_aluno }}</b>, 
+    declaro ter recebido em perfeito estado o instrumento <b>{{ inst.tipo }} {{ inst.marca }}</b> 
+    (Série: {{ inst.numero }}), comprometendo-me a zelar pelo mesmo.</p>
+    
+    <br><br>
+    <p>Data: {{ data_hoje }}</p>
+    <br><br>
+    <p>__________________________________________<br>Assinatura do Responsável</p>
+    <a href="/" class="no-print">Voltar</a>
+    <style>@media print { .no-print { display: none; } }</style>
+</body>

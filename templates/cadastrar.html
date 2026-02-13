@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastrar Instrumento</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: white; padding: 40px; }
+        .form-container { background: #2d2d2d; padding: 30px; border-radius: 12px; max-width: 600px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { border-bottom: 2px solid #28a745; padding-bottom: 10px; margin-bottom: 20px; color: #28a745; }
+        label { display: block; margin-top: 10px; color: #aaa; }
+        input { width: 100%; padding: 12px; margin-top: 5px; background: #3d3d3d; border: 1px solid #555; border-radius: 6px; color: white; box-sizing: border-box; }
+        button { background-color: #28a745; color: white; padding: 15px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 25px; }
+        .back-link { display: block; text-align: center; margin-top: 15px; text-decoration: none; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Novo Instrumento</h2>
+        <form action="/cadastrar" method="POST">
+            <label>Tipo:</label>
+            <input type="text" name="tipo" placeholder="Ex: Violão, Flauta..." required>
+            
+            <label>Marca:</label>
+            <input type="text" name="marca" placeholder="Ex: Yamaha, Giannini">
+            
+            <label>Modelo:</label>
+            <input type="text" name="modelo" placeholder="Ex: C40, Estudante">
+            
+            <label>Número de Série:</label>
+            <input type="text" name="numero" placeholder="Nº de identificação">
+            
+            <label>Origem:</label>
+            <input type="text" name="origem" placeholder="Doação, Compra...">
+            
+            <label>Aluno Responsável:</label>
+            <input type="text" name="aluno" placeholder="Nome do aluno">
+            
+            <label>Telefone do Aluno:</label>
+            <input type="text" name="contato" id="telefone" onkeyup="handlePhone(event)" maxlength="15" placeholder="(99) 99999-9999">
+            
+            <button type="submit">Salvar Instrumento</button>
+        </form>
+        <a href="/" class="back-link">Voltar para a Lista</a>
+    </div>
+
+    <script>
+        const handlePhone = (event) => {
+            let input = event.target;
+            input.value = phoneMask(input.value);
+        }
+        const phoneMask = (value) => {
+            if (!value) return "";
+            value = value.replace(/\D/g, '');
+            value = value.replace(/(\d{2})(\d)/, "($1) $2");
+            value = value.replace(/(\d{5})(\d)/, "$1-$2");
+            return value;
+        }
+    </script>
+</body>
+</html>
