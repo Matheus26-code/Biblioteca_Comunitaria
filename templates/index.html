@@ -2,60 +2,167 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Inventário - Biblioteca Comunitária</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventário Pro - Biblioteca</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: white; padding: 40px; }
-        .container { max-width: 1100px; margin: auto; background: #2d2d2d; padding: 20px; border-radius: 12px; }
-        h1 { text-align: center; color: #007bff; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-add { background-color: #28a745; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; background: #333; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #444; }
-        th { background-color: #3d3d3d; color: #007bff; text-transform: uppercase; font-size: 0.85em; }
-        .status-posse { color: #d9534f; font-weight: bold; }
-        .status-livre { color: #28a745; font-weight: bold; }
+        :root {
+            --primary: #2563eb;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 20px;
+        }
+
+        .container { max-width: 1200px; margin: auto; }
+
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
+
+        .search-container { 
+            background: var(--card); 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-bottom: 25px;
+        }
+
+        .btn-new {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: opacity 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-new:hover { opacity: 0.9; }
+
+        table { 
+            width: 100%; 
+            background: var(--card); 
+            border-radius: 12px; 
+            overflow: hidden; 
+            border-collapse: collapse;
+        }
+
+        th { 
+            background: #334155; 
+            padding: 15px; 
+            text-align: left; 
+            font-size: 0.85rem; 
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td { padding: 15px; border-bottom: 1px solid #334155; vertical-align: middle; }
+
+        .id-badge { background: #334155; padding: 4px 8px; border-radius: 4px; font-family: monospace; }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .status-loaned { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .status-available { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+
+        .address-text { color: #94a3b8; font-size: 0.85rem; display: block; margin-top: 4px; }
+
+        .actions a { 
+            color: #94a3b8; 
+            text-decoration: none; 
+            margin-right: 10px; 
+            font-size: 0.9rem;
+        }
+        
+        .actions a:hover { color: var(--primary); }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Inventário de Instrumentos</h1>
+        <div class="header">
+            <h1>📚 Gestão de Instrumentos</h1>
+            <div style="display: flex; gap: 10px;">
+                <a href="/cadastrar" class="btn-new">+ Novo Item</a>
+                <a href="/logout" class="btn-new" style="background: #ef4444;">Sair</a>
+            </div>
+        </div>
 
-        <div class="top-bar">
-    <form action="/buscar" method="GET">
-        </form>
-    
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <a href="/cadastrar" class="btn-add">+ Novo Instrumento</a>
-        <a href="/logout" style="color: #dc3545; text-decoration: none; font-weight: bold; padding: 10px; border: 1px solid #dc3545; border-radius: 5px;">🚪 Sair</a>
-    </div>
-</div>
+        <div class="search-container">
+            <form action="/" method="GET" style="display: flex; gap: 10px;">
+                <input type="text" name="busca" placeholder="Buscar por item, marca ou aluno..."
+                    style="flex: 1; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white;">
+                <button type="submit" class="btn-new">🔍 Buscar</button>
+                <a href="/" class="btn-new" style="background: #475569;">Limpar</a>
+            </form>
+        </div>
 
         <table>
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Tipo/Marca</th>
-                    <th>Responsável / Desde</th>
+                    <th>Item / Marca</th>
+                    <th>Situação Atual</th>
+                    <th>Localização</th>
                     <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for inst in instrumentos %}
                 <tr>
-                    <td>{{ inst.id }}</td>
-                    <td>{{ inst.tipo }} ({{ inst.marca }})</td>
+                    <td><span class="id-badge">#{{ inst[0] }}</span></td>
+                    <td><strong>{{ inst[1] }}</strong><br><small style="color: #64748b;">{{ inst[2] }}</small></td>
                     <td>
-                        {% if inst.aluno_responsavel %}
-                            <span class="status-posse">{{ inst.aluno_responsavel }}</span><br>
-                            <small style="color: #888;">(Desde: {{ inst.data_emprestimo if inst.data_emprestimo else 'Não registrada' }})</small>
+                        {% if inst[3] %}
+                            <span class="status-badge status-loaned">EMPRESTADO</span><br>
+                            {{ inst[3] }}<br>
+                            <small style="color: #64748b;">📞 {{ inst[4] }}</small>
                         {% else %}
-                            <span class="status-livre">Na Biblioteca</span>
+                            <span class="status-badge status-available">DISPONÍVEL</span>
                         {% endif %}
                     </td>
                     <td>
-                        <a href="/editar/{{ inst.id }}" style="color: #007bff; text-decoration: none;">📝 Editar</a> | 
-                        <a href="/remover/{{ inst.id }}" onclick="return confirm('Deseja excluir?')" style="color: #dc3545; text-decoration: none;">🗑️ Excluir</a> |
-                        <a href="/cautela/{{ inst.id }}" style="color: #6c757d; text-decoration: none;">🖨️ Cautela</a>
+                        <span class="address-text">
+                            {% if inst[6] %}
+                                {{ inst[6] }}, {{ inst[7] }}<br>
+                                {{ inst[8] }}, {{ inst[9] }}
+                            {% else %}
+                                <i>Biblioteca Local</i>
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="/editar/{{ inst[0] }}">Editar</a>
+                        <a href="/cautela/{{ inst[0] }}">Cautela</a>
+                        <a href="/remover/{{ inst[0] }}" style="color: #ef4444;" onclick="return confirm('Excluir?')">Excluir</a>
                     </td>
                 </tr>
                 {% endfor %}

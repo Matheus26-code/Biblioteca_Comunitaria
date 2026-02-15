@@ -1,0 +1,21 @@
+# Ambientes Virtuais
+venv/
+env/
+.env
+
+# Arquivos temporários do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Banco de dados (Opcional)
+# Se você quiser que o banco vá vazio ou com dados iniciais, comente a linha abaixo com #
+# biblioteca_comunitaria.db
+
+# Pastas de IDEs
+.vscode/
+.idea/
+
+# Arquivos do sistema
+Thumbs.db
+desktop.ini

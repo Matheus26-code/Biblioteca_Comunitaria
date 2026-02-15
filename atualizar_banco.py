@@ -4,22 +4,29 @@ import sqlite3
 BANCO = 'biblioteca_comunitaria.db'
 
 def adicionar_coluna():
-    try:
-        conn = sqlite3.connect(BANCO)
-        cursor = conn.cursor()
-        
-        # O comando que vai adicionar a coluna de data
-        cursor.execute("ALTER TABLE instrumentos ADD COLUMN data_emprestimo TEXT;")
-        
-        conn.commit()
-        print("✅ Sucesso! A coluna 'data_emprestimo' foi adicionada.")
-    except sqlite3.OperationalError:
-        print("⚠️ Aviso: A coluna já existe ou o banco não foi encontrado.")
-    except Exception as e:
-        print(f"❌ Erro inesperado: {e}")
-    finally:
-        if conn:
-            conn.close()
+    conn = sqlite3.connect(BANCO)
+    cursor = conn.cursor()
+    
+    # Lista de novas colunas para adicionar
+    novas_colunas = [
+        "cidade TEXT", 
+        "bairro TEXT", 
+        "rua TEXT", 
+        "numero_casa TEXT"
+    ]
+
+    for coluna in novas_colunas:
+        try:
+            # Tenta adicionar uma por uma
+            cursor.execute(f"ALTER TABLE instrumentos ADD COLUMN {coluna}")
+            print(f"✅ Coluna {coluna.split()[0]} adicionada com sucesso!")
+        except sqlite3.OperationalError:
+            # Se a coluna já existir, ele apenas pula para a próxima sem travar
+            print(f"⚠️ Coluna {coluna.split()[0]} já existe, pulando...")
+
+    conn.commit()
+    conn.close()
+    print("🚀 Processo de atualização concluído!")
 
 if __name__ == "__main__":
     adicionar_coluna()

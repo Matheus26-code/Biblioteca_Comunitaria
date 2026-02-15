@@ -11,11 +11,23 @@ USUARIOS = {"admin": "biblioteca2026"}
 
 @app.route('/')
 def index():
-    if not session.get('logado'): return redirect(url_for('login'))
+    if not session.get('logado'):
+        return redirect(url_for('login'))
+    
+    termo = request.args.get('busca', '').strip()
     conn = criar_conexao()
-    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM instrumentos")
+
+    # Selecionamos as colunas NOMINALMENTE para garantir a ordem
+    colunas = "id, tipo, marca, aluno_responsavel, contato_aluno, data_emprestimo, cidade, bairro, rua, numero_casa"
+    
+    if termo:
+        sql = f"SELECT {colunas} FROM instrumentos WHERE tipo LIKE ? OR marca LIKE ? OR aluno_responsavel LIKE ?"
+        filtro = f'%{termo}%'
+        cursor.execute(sql, (filtro, filtro, filtro))
+    else:
+        cursor.execute(f"SELECT {colunas} FROM instrumentos")
+
     instrumentos = cursor.fetchall()
     conn.close()
     return render_template('index.html', instrumentos=instrumentos)
@@ -26,14 +38,18 @@ def cadastrar():
     if not session.get('logado'): return redirect(url_for('login'))
     if request.method == 'POST':
         # 1. Captura os dados do formulário
-        tipo = request.form['tipo']
-        marca = request.form['marca']
-        modelo = request.form['modelo']
-        numero = request.form['numero']
-        origem = request.form['origem']
-        aluno = request.form['aluno']
-        contato = request.form['contato']
-        
+        tipo = request.form['tipo'].strip().title()
+        marca = request.form['marca'].strip().title()
+        modelo = request.form['modelo'].strip().title()
+        numero = request.form['numero'].strip().title()
+        origem = request.form['origem'].strip().title()
+        aluno = request.form['aluno'].strip().title()
+        telefone = request.form.get('telefone')
+        cidade = request.form.get('cidade').strip().title()
+        bairro = request.form.get('bairro').strip().title()
+        rua = request.form.get('rua').strip().title()
+        numero_casa = request.form.get('numero_casa')
+                
         # 2. Lógica da Data: Se já cadastrar com um aluno, gera a data de hoje
         data_posse = datetime.now().strftime('%d/%m/%Y') if aluno else ""
 
@@ -42,11 +58,11 @@ def cadastrar():
         
         # 3. SQL atualizado para incluir a 8ª coluna (data_emprestimo)
         sql = '''INSERT INTO instrumentos
-                (tipo, marca, modelo, numero, origem, aluno_responsavel, contato_aluno, data_emprestimo)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+                (tipo, marca, aluno_responsavel, data_emprestimo, contato_aluno, cidade, bairro, rua, numero_casa)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'''
         
-        # 4. Executa passando os 8 valores
-        cursor.execute(sql, (tipo, marca, modelo, numero, origem, aluno, contato, data_posse))
+        # 4. Executa passando os 12 valores na ordem exata
+        cursor.execute(sql, (tipo, marca, aluno, data_posse, telefone, cidade, bairro, rua, numero_casa))
         
         conn.commit()
         conn.close()
@@ -59,51 +75,46 @@ def cadastrar():
 
 @app.route('/editar/<int:id>', methods=['GET', 'POST'])
 def editar(id):
-    if not session.get('logado'): return redirect(url_for('login'))
+    if not session.get('logado'):
+        return redirect(url_for('login'))
+
     conn = criar_conexao()
-    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     if request.method == 'POST':
-        # 1. CAPTURE O ALUNO PRIMEIRO (Isso resolve o UnboundLocalError)
-        aluno = request.form.get('aluno', '')
-        data_manual = request.form['data_emprestimo']
-
-        if data_manual:
-            data_posse = data_manual
-        elif aluno:
-            data_posse = datetime.now().strftime('%d/%m/%Y')
-        else:
-            data_posse = ""
-        
-        # 2. SÓ AGORA CRIE A DATA baseada no aluno
-        data_posse = datetime.now().strftime('%d/%m/%Y') if aluno else ""
-        
-        
-        # 3. CAPTURE O RESTANTE
+        # 1. Captura os dados do formulário
         tipo = request.form['tipo']
         marca = request.form['marca']
-        modelo = request.form['modelo']
-        numero = request.form['numero']
-        origem = request.form['origem']
+        aluno = request.form['aluno']
         contato = request.form['contato']
+        data_emp = request.form['data_emprestimo']
+        cidade = request.form['cidade']
+        bairro = request.form['bairro']
+        rua = request.form['rua']
+        numero = request.form['numero_casa']
 
-        # 4. ATUALIZE O SQL (Certifique-se de que o número de '?' bate com as variáveis)
-        sql = """UPDATE instrumentos SET
-                tipo=?, marca=?, modelo=?, numero=?, origem=?,
-                aluno_responsavel=?, contato_aluno=?, data_emprestimo=?
-                WHERE id=?"""
+        # 2. SQL de Update
+        sql = '''UPDATE instrumentos SET
+                tipo=?, marca=?, aluno_responsavel=?, contato_aluno=?,
+                data_emprestimo=?, cidade=?, bairro=?, rua=?, numero_casa=?
+                WHERE id=?'''
         
-        cursor.execute(sql, (tipo, marca, modelo, numero, origem, aluno, contato, data_posse, id))
+        cursor.execute(sql, (tipo, marca, aluno, contato, data_emp, cidade, bairro, rua, numero, id))
         conn.commit()
         conn.close()
-        flash("📝 Alterações e data salvas!", "success")
         return redirect(url_for('index'))
+
+    # 3. Se for GET, busca os dados para preencher o formulário
+    # Usamos a ordem exata para bater com os índices inst[x] do editar.html
+    sql_select = '''SELECT id, tipo, marca, modelo, numero, origem,
+                        aluno_responsavel, contato_aluno, data_emprestimo,
+                        cidade, bairro, rua, numero_casa
+                    FROM instrumentos WHERE id = ?'''
     
-    # Se for GET, busca os dados para o formulário
-    cursor.execute("SELECT * FROM instrumentos WHERE id = ?", (id,))
+    cursor.execute(sql_select, (id,))
     instrumento = cursor.fetchone()
     conn.close()
+
     return render_template('editar.html', inst=instrumento)
 
 
@@ -135,13 +146,27 @@ def buscar():
 
 
 @app.route('/cautela/<int:id>')
-def gerar_cautela(id):
-    if not session.get('logado'): return redirect(url_for('login'))
+def cautela(id):
+    if not session.get('logado'):
+        return redirect(url_for('login'))
+
     conn = criar_conexao()
-    conn.row_factory = sqlite3.Row
-    inst = conn.cursor().execute("SELECT * FROM instrumentos WHERE id=?", (id,)).fetchone()
+    cursor = conn.cursor()
+    # Buscamos a ordem exata das 13 colunas para bater com o HTML
+    cursor.execute('''SELECT id, tipo, marca, modelo, numero, origem,
+                            aluno_responsavel, contato_aluno, data_emprestimo,
+                            cidade, bairro, rua, numero_casa
+                    FROM instrumentos WHERE id = ?''', (id,))
+    
+    instrumento = cursor.fetchone()
     conn.close()
-    return render_template('cautela.html', inst=inst, data_hoje=datetime.now().strftime('%d/%m/%Y'))
+
+    if instrumento:
+        from datetime import datetime
+        data_hoje = datetime.now().strftime('%d/%m/%Y')
+        return render_template('cautela.html', inst=instrumento, data_hoje=data_hoje)
+    
+    return "Instrumento não encontrado", 404
 
 
 @app.route('/login', methods=['GET', 'POST'])
